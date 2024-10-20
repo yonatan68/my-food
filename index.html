@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מתכונים בריאים</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #8e44ad, #e056fd); /* גרדיאנט סגול לוורוד */
+            flex-direction: column;
+        }
+        .search-container {
+            text-align: center;
+        }
+        .search-box {
+            height: 60px; /* הגדלת שדה החיפוש */
+            font-size: 24px; /* הגדלת טקסט בשדה החיפוש */
+            padding: 10px;
+            border-radius: 30px;
+            border: 1px solid #ccc;
+            width: 400px; /* הרחבת השדה */
+        }
+        .search-button {
+            height: 60px; /* הגדלת כפתור */
+            font-size: 24px; /* הגדלת טקסט בכפתור */
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-left: 20px;
+            border-radius: 30px;
+            padding: 0 20px; /* הגדלת המרחב בכפתור */
+        }
+        #recipe {
+            display: none; /* מתחיל מוסתר */
+            margin-top: 30px; /* מרווח מוגדל */
+        }
+        .recipe-image {
+            width: 600px; /* הגדלת תמונת המתכון */
+            height: 600px; /* הגדלת גובה תמונת המתכון */
+            object-fit: cover;
+        }
+        .recipe-title {
+            font-size: 36px; /* הגדלת כותרת המתכון */
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .recipe-instructions {
+            margin-top: 20px;
+            font-size: 24px; /* הגדלת טקסט ההוראות */
+            max-width: 700px; /* מגבלת רוחב לטקסט ההוראות */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="search-container">
+        <input type="text" class="search-box" placeholder="הכנס סוג ארוחה..." id="meal-type-input" autocomplete="off">
+        <button class="search-button" id="search-button">חפש</button>
+    </div>
+
+    <div id="recipe">
+        <img id="recipe-image" class="recipe-image" src="" alt="תמונה של מתכון">
+        <div id="recipe-title" class="recipe-title"></div>
+        <div id="recipe-instructions" class="recipe-instructions"></div>
+    </div>
+
+    <script>
+        // הוספת מאזין לכפתור החיפוש
+        document.getElementById('search-button').addEventListener('click', function(event) {
+            event.preventDefault(); // מונע רענון של הדף כאשר לוחצים על הכפתור
+
+            const mealType = document.getElementById('meal-type-input').value.trim().toLowerCase();
+            
+            if (!mealType) {
+                alert('נא להזין סוג ארוחה');
+                return;
+            }
+
+            // קריאה ל-API של TheMealDB
+            fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${mealType}`)
+                .then(response => response.json())
+                .then(data => {
+                    const meal = data.meals ? data.meals[0] : null;
+                    
+                    if (!meal) {
+                        alert('לא נמצא מתכון לסוג הארוחה שהוזן.');
+                        return;
+                    }
+
+                    // הצגת המתכון על המסך
+                    document.getElementById('recipe-title').innerText = `${meal.strMeal} (${meal.strArea})`;
+                    document.getElementById('recipe-image').src = meal.strMealThumb;
+                    document.getElementById('recipe-instructions').innerText = meal.strInstructions;
+                    document.getElementById('recipe').style.display = 'block'; // הצגת המתכון
+                })
+                .catch(error => {
+                    console.error('שגיאה בקריאת API:', error);
+                    alert('שגיאה בטעינת המתכון.');
+                });
+        });
+
+        // מניעת רענון הדף כאשר לוחצים על Enter
+        document.getElementById('meal-type-input').addEventListener('keydown', function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // מונע רענון הדף כאשר לוחצים Enter
+                document.getElementById('search-button').click(); // מפעיל את הכפתור
+            }
+        });
+    </script>
+
+</body>
+</html>
